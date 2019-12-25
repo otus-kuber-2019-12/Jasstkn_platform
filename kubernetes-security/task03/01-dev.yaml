@@ -14,7 +14,7 @@ metadata:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: janeRoleBiding
+  name: janeRoleBinding
   namespace: dev
 subjects:
   - kind: ServiceAccount
@@ -35,7 +35,7 @@ metadata:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: kenRoleBiding
+  name: kenRoleBinding
   namespace: dev
 subjects:
   - kind: ServiceAccount
