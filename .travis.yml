@@ -3,4 +3,4 @@ language: bash
 sudo: required
 
 before_install:
-  - curl https://raw.githubusercontent.com/Jasstkn/otus-platform-tests/better-kubernetes-security/homeworks/kubernetes-security/run.sh | bash
+  - curl curl https://raw.githubusercontent.com/express42/otus-platform-tests/2019-12/run.sh | bash
