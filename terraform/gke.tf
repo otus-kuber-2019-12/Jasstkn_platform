@@ -1,6 +1,6 @@
 data google_container_engine_versions "engine_versions" {
   location       = var.region
-  version_prefix = "1.15."
+  version_prefix = "1.15.7"
 }
 
 resource google_container_cluster "cluster" {
@@ -16,6 +16,20 @@ resource google_container_cluster "cluster" {
   network_policy {
     enabled  = true
     provider = "CALICO"
+  }
+  cluster_autoscaling {
+    enabled = true
+    resource_limits {
+      resource_type = "cpu"
+      maximum       = 18
+      minimum       = 3
+    }
+
+    resource_limits {
+      resource_type = "memory"
+      maximum       = 11
+      minimum       = 6
+    }
   }
   addons_config {
     istio_config {
@@ -35,12 +49,9 @@ resource google_container_node_pool "node_pool" {
   cluster            = google_container_cluster.cluster.name
   version            = data.google_container_engine_versions.engine_versions.latest_node_version
   initial_node_count = 1
-  autoscaling {
-    min_node_count = var.node_pool_autoscaling_min_node_count
-    max_node_count = var.node_pool_autoscaling_max_node_count
-  }
 
   node_config {
+    preemptible  = true
     machine_type = var.worker_machine_type
     disk_size_gb = var.worker_disk_size
 
