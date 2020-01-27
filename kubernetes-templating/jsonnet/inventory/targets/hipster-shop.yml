@@ -1,7 +1,0 @@
-classes:
-  - clusters.minikube
-  - components.recommendationservice
-  - components.kapitan
-
-parameters:
-  target: hipster-shop

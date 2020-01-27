@@ -8,3 +8,6 @@ parameters:
         output_type: yaml
         input_type: jsonnet
         input_paths: ${kapitan:mains}
+      - output_path: scripts
+        input_type: jinja2
+        input_paths: ${kapitan:scripts}

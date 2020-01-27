@@ -93,6 +93,6 @@ local service = {
 
 
 {
-    "app-deployment": deployment,
-    "app-service": service,
+    "deployment": deployment,
+    "service": service,
 }
