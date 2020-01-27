@@ -1,0 +1,10 @@
+parameters:
+  namespace: ${target}
+  kapitan:
+    vars:
+      target: ${target}
+    compile:
+      - output_path: manifests
+        output_type: yaml
+        input_type: jsonnet
+        input_paths: ${kapitan:mains}
