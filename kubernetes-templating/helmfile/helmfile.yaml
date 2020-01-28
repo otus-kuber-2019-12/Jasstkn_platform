@@ -12,6 +12,7 @@ environments:
     values:
       - "values/{{ .Environment.Name }}/charts-versions.yaml"
       - kubeContext: gke_infra-265919_us-central1_infra
+        domain: 35.202.19.145
 
 repositories:
   - name: stable
@@ -37,6 +38,20 @@ releases:
     missingFileHandler: Warn
     values:
       - "./values/{{ .Environment.Name }}/cert-manager.yaml"
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: "kubectl"
+        args: ["apply", "-f", "https://raw.githubusercontent.com/jetstack/cert-manager/release-0.9/deploy/manifests/01-namespace.yaml"]
+      - events: ["presync"]
+        showlogs: true
+        command: "kubectl"
+        args: [ "apply", "-f", "https://raw.githubusercontent.com/jetstack/cert-manager/release-0.9/deploy/manifests/00-crds.yaml"]
+      - events: ["presync"]
+        showlogs: true
+        command: "kubectl"
+        args: ["apply", "-f", "./values/{{`{{ .Environment.Name }}`}}/issuer-prod.yaml", "./values/{{`{{ .Environment.Name }}`}}/issuer-staging.yaml", "--validate"]
+
 
   - name: harbor
     chart: harbor/harbor
@@ -45,4 +60,7 @@ releases:
     missingFileHandler: Warn
     values:
       - "./values/{{ .Environment.Name }}/harbor.yaml"
+    set:
+      - name: hosts.core
+        value: harbor.{{ .Environment.Values.domain }}
 
