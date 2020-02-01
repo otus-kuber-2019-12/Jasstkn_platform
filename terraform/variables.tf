@@ -3,7 +3,7 @@ variable name {
   type        = string
 }
 
-variable region {
+variable zone {
   description = "Region"
   type        = string
 }
