@@ -7,3 +7,4 @@ spec:
   database: otus-database
   password: otuspassword  # Use secret instead
   storage_size: 1Gi
+status: {}
