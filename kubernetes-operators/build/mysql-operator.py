@@ -39,8 +39,8 @@ def delete_success_jobs(mysql_instance_name):
                 (jobname == f"restore-{mysql_instance_name}-job"):
             if job.status.succeeded == 1:
                 api.delete_namespaced_job(jobname,
-                                          'default',
-                                          propagation_policy='Background')
+                                        'default',
+                                        propagation_policy='Background')
 
 
 @kopf.on.create('otus.homework', 'v1', 'mysqls')
@@ -55,10 +55,10 @@ def mysql_on_create(body, spec, status, logger, **kwargs):
     # Генерируем JSON манифесты для деплоя
     persistent_volume = render_template('mysql-pv.yml.j2',
                                         {'name': name,
-                                         'storage_size': storage_size})
+                                        'storage_size': storage_size})
     persistent_volume_claim = render_template('mysql-pvc.yml.j2',
-                                              {'name': name,
-                                               'storage_size': storage_size})
+                                            {'name': name,
+                                            'storage_size': storage_size})
     service = render_template('mysql-service.yml.j2', {'name': name})
 
     deployment = render_template('mysql-deployment.yml.j2', {
@@ -95,8 +95,21 @@ def mysql_on_create(body, spec, status, logger, **kwargs):
     try:
         api = kubernetes.client.BatchV1Api()
         api.create_namespaced_job('default', restore_job)
-        body["status"] = dict(message="HELL YES!!!")
+
+        # проверяем статус restore-backup job
+        job_finished = False
+        jobs = api.list_namespaced_job('default')
+        while (not job_finished) and (job.metadata.name == restore_job["metadata"]["name"] for job in jobs.items):
+            time.sleep(1)
+            jobs = api.list_namespaced_job('default')
+            for job in jobs.items:
+                if job.metadata.name == restore_job["metadata"]["name"]:
+                    if job.status.succeeded == 1:
+                        job_finished = True
+                        body["status"] = dict(message="mysql-instance created with restore-job")
+
     except kubernetes.client.rest.ApiException:
+        body["status"] = dict(message="mysql-instance created without restore-job")
         pass
 
     # Cоздаем PVC  и PV для бэкапов:
@@ -114,7 +127,7 @@ def mysql_on_create(body, spec, status, logger, **kwargs):
         api.create_namespaced_persistent_volume_claim('default', backup_pvc)
     except kubernetes.client.rest.ApiException:
         pass
-    logging.info(status)
+
     return body["status"]
 
 @kopf.on.delete('otus.homework', 'v1', 'mysqls')
