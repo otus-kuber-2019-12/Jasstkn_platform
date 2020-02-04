@@ -3,4 +3,4 @@ account.json
 *env/
 .DS_Store
 *.tgz
-__pycache__/*
+__pycache__/

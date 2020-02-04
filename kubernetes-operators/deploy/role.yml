@@ -10,3 +10,6 @@ rules:
   - '*'
   verbs:
   - '*'
+- apiGroups: [""]
+  resources: ["ms/status"]
+  verbs: ["update", "patch"]

@@ -24,6 +24,8 @@ spec:
           properties:
             name:
               type: string
+        status:
+          type: object
         spec:
           type: object
           properties:
@@ -39,8 +41,6 @@ spec:
           - image
           - database
           - password
-        status:
-          type: object
   names:                # различные форматы имени объекта CR
     kind: MySQL         # kind CR
     plural: mysqls

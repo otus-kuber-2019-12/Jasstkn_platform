@@ -71,7 +71,7 @@ def mysql_on_create(body, spec, status, logger, **kwargs):
         'image': image,
         'password': password,
         'database': database})
-    print(restore_job)
+
     # Определяем, что созданные ресурсы являются дочерними к управляемому CustomResource:
     kopf.append_owner_reference(persistent_volume, owner=body)
     kopf.append_owner_reference(persistent_volume_claim, owner=body)  # addopt
@@ -95,8 +95,7 @@ def mysql_on_create(body, spec, status, logger, **kwargs):
     try:
         api = kubernetes.client.BatchV1Api()
         api.create_namespaced_job('default', restore_job)
-        restore_job.update({"status": {'mysql_on_create': {'message': 'mysql-instance created with restore-job'}}})
-        api.patch_namespaced_job_status(restore_job['metadata']['name'], 'default', restore_job)
+        body["status"] = dict(message="HELL YES!!!")
     except kubernetes.client.rest.ApiException:
         pass
 
@@ -115,6 +114,8 @@ def mysql_on_create(body, spec, status, logger, **kwargs):
         api.create_namespaced_persistent_volume_claim('default', backup_pvc)
     except kubernetes.client.rest.ApiException:
         pass
+    logging.info(status)
+    return body["status"]
 
 @kopf.on.delete('otus.homework', 'v1', 'mysqls')
 def delete_object_make_backup(body, **kwargs):
