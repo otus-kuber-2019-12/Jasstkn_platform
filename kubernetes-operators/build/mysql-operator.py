@@ -19,6 +19,7 @@ def wait_until_job_end(jobname):
                 if job.status.succeeded == 1:
                     print(f"job with { jobname }  success")
                     job_finished = True
+    return True
 
 
 def render_template(filename, vars_dict):
@@ -99,14 +100,8 @@ def mysql_on_create(body, spec, status, logger, **kwargs):
         # проверяем статус restore-backup job
         job_finished = False
         jobs = api.list_namespaced_job('default')
-        while (not job_finished) and (job.metadata.name == restore_job["metadata"]["name"] for job in jobs.items):
-            time.sleep(1)
-            jobs = api.list_namespaced_job('default')
-            for job in jobs.items:
-                if job.metadata.name == restore_job["metadata"]["name"]:
-                    if job.status.succeeded == 1:
-                        job_finished = True
-                        body["status"] = dict(message="mysql-instance created with restore-job")
+        if wait_until_job_end(f"restore-{name}-job"):
+            body["status"] = dict(message="mysql-instance created with restore-job")
 
     except kubernetes.client.rest.ApiException:
         body["status"] = dict(message="mysql-instance created without restore-job")
@@ -149,3 +144,36 @@ def delete_object_make_backup(body, **kwargs):
     api.create_namespaced_job('default', backup_job)
     wait_until_job_end(f"backup-{name}-job")
     return {'message': "mysql and its children resources deleted"}
+
+@kopf.on.update('otus.homework', 'v1', 'mysqls')
+def update_psswd(body, spec, diff, status, logger, **kwargs):
+    name = body['metadata']['name']
+    image = body['spec']['image']
+    password = body['spec']['password']
+    database = body['spec']['database']
+
+    # update deployment manifest
+    deployment = render_template('mysql-deployment.yml.j2', {
+        'name': name,
+        'image': image,
+        'password': password,
+        'database': database})
+    api = kubernetes.client.AppsV1Api()
+    api.patch_namespaced_deployment(deployment["metadata"]["name"],"default",deployment)
+
+    # call tuple element
+    if diff[0][1][1] == "password":
+        logging.info(diff)
+        change_pswd_job = render_template('change-pswd-job.yml.j2', {
+            'name': name,
+            'image': image,
+            'old_password': diff[0][3],
+            'new_password': diff[0][2],
+            'database': database})
+        api = kubernetes.client.BatchV1Api()
+        api.create_namespaced_job('default', change_pswd_job)
+        if wait_until_job_end(f"change-pswd-{name}-job"):
+            kopf.event(body,
+                    type='Normal',
+                    reason='PasswordChange',
+                    message='Database password has been changed recently')
