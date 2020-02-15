@@ -101,6 +101,12 @@ def mysql_on_create(body, spec, status, logger, **kwargs):
         for job in jobs.items:
             if "restore" in job.metadata.name and job.status.succeeded == 1:
                 body["status"] = dict(message="mysql-instance created with restore-job")
+            else:
+                kopf.event(body,
+                    type='Warning',
+                    reason='RestoreDB',
+                    message='Database job didnt completed successfully within 20 sec, action required!')
+                body["status"] = dict(message="mysql-instance created without restore-job")
     except kubernetes.client.rest.ApiException:
         body["status"] = dict(message="mysql-instance created without restore-job")
         pass
@@ -149,16 +155,7 @@ def update_psswd(body, spec, diff, status, logger, **kwargs):
     image = body['spec']['image']
     password = body['spec']['password']
     database = body['spec']['database']
-
-    # update deployment manifest
-    deployment = render_template('mysql-deployment.yml.j2', {
-        'name': name,
-        'image': image,
-        'password': password,
-        'database': database})
-    api = kubernetes.client.AppsV1Api()
-    api.patch_namespaced_deployment(deployment["metadata"]["name"],"default",deployment)
-
+    delete_success_jobs(name)
     # call tuple element
     if diff[0][1][1] == "password":
         logging.info(diff)
@@ -169,9 +166,47 @@ def update_psswd(body, spec, diff, status, logger, **kwargs):
             'new_password': diff[0][3],
             'database': database})
         api = kubernetes.client.BatchV1Api()
-        api.create_namespaced_job('default', change_pswd_job)
-        if wait_until_job_end(f"change-pswd-{name}-job"):
-            kopf.event(body,
-                    type='Normal',
-                    reason='PasswordChange',
-                    message='Database password has been changed recently')
+        try:
+            restore_job = render_template('restore-job.yml.j2', {
+            'name': name,
+            'image': image,
+            'password': password,
+            'database': database})
+
+            backup_job = render_template('backup-job.yml.j2', {
+            'name': name,
+            'image': image,
+            'password': password,
+            'database': database})
+
+            api = kubernetes.client.BatchV1Api()
+            api.delete_namespaced_job(restore_job["metadata"]["name"],"default")
+        except:
+            pass
+
+        try:
+            api.create_namespaced_job('default', change_pswd_job)
+            if wait_until_job_end(f"change-pswd-{name}-job"):
+                kopf.event(body,
+                        type='Normal',
+                        reason='PasswordChange',
+                        message='Database password has been changed recently')
+        except:
+            api.delete_namespaced_job(change_pswd_job["metadata"]["name"],"default")
+            time.sleep(5)
+            api.create_namespaced_job('default', change_pswd_job)
+            if wait_until_job_end(f"change-pswd-{name}-job"):
+                kopf.event(body,
+                        type='Normal',
+                        reason='PasswordChange',
+                        message='Database password has been changed recently')
+                api.delete_namespaced_job(change_pswd_job["metadata"]["name"],"default")
+
+    # update deployment manifest
+    deployment = render_template('mysql-deployment.yml.j2', {
+        'name': name,
+        'image': image,
+        'password': password,
+        'database': database})
+    api = kubernetes.client.AppsV1Api()
+    api.patch_namespaced_deployment(deployment["metadata"]["name"],"default",deployment)

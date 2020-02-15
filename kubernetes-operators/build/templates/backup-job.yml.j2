@@ -10,6 +10,8 @@ spec:
     metadata:
       name: backup-{{ name }}-cronjob
     spec:
+      backoffLimit: 5
+      ttlSecondsAfterFinished: 500
       restartPolicy: OnFailure
       containers:
       - name: backup-{{ name }}

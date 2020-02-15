@@ -8,6 +8,8 @@ spec:
     metadata:
       name: restore-{{ name }}-job
     spec:
+      backoffLimit: 5
+      ttlSecondsAfterFinished: 500
       restartPolicy: OnFailure
       containers:
       - name: backup

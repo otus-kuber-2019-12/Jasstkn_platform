@@ -8,6 +8,8 @@ spec:
     metadata:
       name: change-pswd-{{ name }}-job
     spec:
+      backoffLimit: 5
+      ttlSecondsAfterFinished: 500
       restartPolicy: OnFailure
       containers:
       - name: chgpswd
@@ -16,7 +18,7 @@ spec:
         command:
         - /bin/sh
         - -c
-        - mysql -u root -h {{ name }} -p{{ old_password }} -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ new_password }}';ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ new_password }}';FLUSH PRIVILEGES;"
+        - mysql -u root -h {{ name }} -p{{ old_password }} -e "ALTER USER 'root'@'%' IDENTIFIED BY '{{ new_password }}';ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ new_password }}';FLUSH PRIVILEGES;"
         volumeMounts:
         - name: backup-{{ name }}-pv
           mountPath: /backup-{{ name }}-pv
