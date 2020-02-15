@@ -96,13 +96,11 @@ def mysql_on_create(body, spec, status, logger, **kwargs):
     try:
         api = kubernetes.client.BatchV1Api()
         api.create_namespaced_job('default', restore_job)
-
-        # проверяем статус restore-backup job
-        job_finished = False
         jobs = api.list_namespaced_job('default')
-        if wait_until_job_end(f"restore-{name}-job"):
-            body["status"] = dict(message="mysql-instance created with restore-job")
-
+        time.sleep(20)
+        for job in jobs.items:
+            if "restore" in job.metadata.name and job.status.succeeded == 1:
+                body["status"] = dict(message="mysql-instance created with restore-job")
     except kubernetes.client.rest.ApiException:
         body["status"] = dict(message="mysql-instance created without restore-job")
         pass
@@ -167,8 +165,8 @@ def update_psswd(body, spec, diff, status, logger, **kwargs):
         change_pswd_job = render_template('change-pswd-job.yml.j2', {
             'name': name,
             'image': image,
-            'old_password': diff[0][3],
-            'new_password': diff[0][2],
+            'old_password': diff[0][2],
+            'new_password': diff[0][3],
             'database': database})
         api = kubernetes.client.BatchV1Api()
         api.create_namespaced_job('default', change_pswd_job)
