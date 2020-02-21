@@ -1,4 +1,6 @@
 account.json
-*/.terraform/*
-*.tgz
+*.terraform/
+*env/
 .DS_Store
+*.tgz
+__pycache__/
