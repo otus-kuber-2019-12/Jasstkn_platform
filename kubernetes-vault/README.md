@@ -1,3 +1,7 @@
+# Выполнено ДЗ №9
+
+ - [x] Основное ДЗ
+
 ## В процессе сделано:
  - Задеплоен consul в HA
  - Задеплоен vault в HA
@@ -174,15 +178,13 @@ Key                        Value
 ---                        -----
 revocation_time            1582563383
 revocation_time_rfc3339    2020-02-24T16:56:23.445781419Z
-
+```
  - Включим tls для волт (для этого нужно поправить values для соответствующего чарта)
 ```
 / # export VAULT_ADDR=https://vault:8200
 / # export KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
 / # curl -s --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --request POST --data '{"jwt": "'$KUBE_TOKEN'", "role": "otus"}' $VAULT_ADDR/v1/auth/kubernetes/login
 {"request_id":"5ac78404-0839-dfb1-718b-e56ce43fd58f","lease_id":"","renewable":false,"lease_duration":0,"data":null,"wrap_info":null,"warnings":null,"auth":{"client_token":"s.vHLKQOAq67ShTfcnU73YS5Xq","accessor":"vENQfkgvJ6I3WciYSb7BZTpB","policies":["default","otus-policy"],"token_policies":["default","otus-policy"],"metadata":{"role":"otus","service_account_name":"vault-auth","service_account_namespace":"default","service_account_secret_name":"vault-auth-token-fqh4z","service_account_uid":"3551d3a5-4e62-4d2d-bd37-800ca5ddde68"},"lease_duration":86400,"renewable":true,"entity_id":"d769617a-171c-dd1f-0dfe-149d788d136b","token_type":"service","orphan":true}}
-
-```
 ```
 ## Как запустить проект:
 ```
@@ -194,6 +196,9 @@ helm install vault .
 kubectl create configmap example-vault-agent-config --from-file=./configs-k8s/
 kubectl apply -f example-k8s-spec.yml --record
 ```
+ - динамические сертификаты для nginx: надо было изменить политику otus-policy, добавив права на изменение PKI и задеплоить nginx с listen 443 ssl
+<img width="972" alt="Screenshot 2020-02-28 at 03 08 17" src="https://user-images.githubusercontent.com/20466436/75498387-13e7fc80-59d8-11ea-8ef4-abd57bc63978.png">
+<img width="972" alt="Screenshot 2020-02-28 at 03 09 17" src="https://user-images.githubusercontent.com/20466436/75498397-1c403780-59d8-11ea-855c-61bdf08c6e2a.png">
 
 ## Как проверить работоспособность:
 ```
@@ -207,6 +212,9 @@ TEST SUITE: None
 NOTES:
 Thank you for installing HashiCorp Vault!
 ```
+
+## PR checklist:
+ - [x] Выставлен label с номером домашнего задания
 
 ## Ответы на вопросы:
 - Конструкция с sed убирает ASCII символы с подсветкой из аутпута
