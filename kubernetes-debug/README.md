@@ -60,7 +60,27 @@
    Status:              Done
  Events:                <none>
  ```
+ - Создана и применена сетевая политика для netperf-client
+ В первоначальном варианте наблюдался дроп пакетов
+ ```
+ > iptables --list -nv | grep DROP
+ 23  1380 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* cali:He8TRqGPuUw3VGwk */
+ > iptables --list -nv | grep LOG
+ 30  1800 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* cali:B30DykF1ntLW86eD */ LOG flags 0 level 5 prefix "calico-packet: "
+ ```
+ - После настройки kubernetes-iptables-tailer мы получаем сообщения о дропе пакетов прямо в ивенты
+ ```
+ Events:
+  Type     Reason      Age   From                                    Message
+  ----     ------      ----  ----                                    -------
+  Normal   Scheduled   109s  default-scheduler                       Successfully assigned default/netperf-server-0d76dca7165d to gke-infra-infra-eb42c575-hpts
+  Normal   Pulled      109s  kubelet, gke-infra-infra-eb42c575-hpts  Container image "tailoredcloud/netperf:v2.7" already present on machine
+  Normal   Created     109s  kubelet, gke-infra-infra-eb42c575-hpts  Created container netperf-server-0d76dca7165d
+  Normal   Started     108s  kubelet, gke-infra-infra-eb42c575-hpts  Started container netperf-server-0d76dca7165d
+  Warning  PacketDrop  107s  kube-iptables-tailer                    Packet dropped when receiving traffic from 10.12.0.18
+ ```
  
+
 ## Как запустить проект:
 - Добавить securityContext c capability: SYS_PTRACE
 ```
@@ -76,4 +96,4 @@ kubectl apply -f agent_daemonset.yml
  - [x] Выставлен label с номером домашнего задания
 
 ## Ответы на вопросы:
-- 
+-
