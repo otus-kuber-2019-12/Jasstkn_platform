@@ -107,18 +107,16 @@
  ```
 
 ## Как запустить проект:
-- Добавить securityContext c capability: SYS_PTRACE
 ```
-kubectl apply -f agent_daemonset.yml
+kubectl apply -f strace/agent_daemonset.yml
+kubectl apply -f kit/deploy/
 ```
 
 ## Как проверить работоспособность:
 ```
-
+kubectl get pods
+kubectl describe netperfs.app.example.com example
 ```
 
 ## PR checklist:
  - [x] Выставлен label с номером домашнего задания
-
-## Ответы на вопросы:
--
