@@ -1,6 +1,8 @@
 # Выполнено ДЗ №12
 
  - [x] Основное ДЗ
+ - [x] Задание со :star: | Исправление сетевой политики
+ - [x] Задание со :star: | Вывод имени пода вместо IP адреса
 
 ## В процессе сделано:
  - Запущен дебаг контейнер в agentless режиме
@@ -79,7 +81,30 @@
   Normal   Started     108s  kubelet, gke-infra-infra-eb42c575-hpts  Started container netperf-server-0d76dca7165d
   Warning  PacketDrop  107s  kube-iptables-tailer                    Packet dropped when receiving traffic from 10.12.0.18
  ```
- 
+ - Исправление сетевой политики: разрешила исходящий и входящий трафик подам, подходящим по селектору
+ ```
+   ingress:
+    - action: Allow
+      source:
+        selector: app=netperf-operator
+    - action: Log
+    - action: Deny
+  egress:
+    - action: Allow
+      destination:
+        selector: app=netperf-operator
+    - action: Log
+    - action: Deny
+ ```
+ - Вывод имени пода вместо IP адреса задается переменной в манифесте даемонсета:
+ ```
+ ...
+  - name: "POD_IDENTIFIER"
+    value: "name"
+ ...
+ default       5s          Warning   PacketDrop         pod/netperf-client-d9cec4059102   Packet dropped when sending traffic to netperf-server-d9cec4059102 (10.12.0.9)
+ default       5s          Warning   PacketDrop         pod/netperf-server-d9cec4059102   Packet dropped when receiving traffic from netperf-client-d9cec4059102 (10.12.0.10)
+ ```
 
 ## Как запустить проект:
 - Добавить securityContext c capability: SYS_PTRACE
