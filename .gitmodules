@@ -7,3 +7,6 @@
 [submodule "kubernetes-vault/vault-guides"]
 	path = kubernetes-vault/vault-guides
 	url = https://github.com/hashicorp/vault-guides.git
+[submodule "kubernetes-storages/hw/csi-driver-host-path"]
+	path = kubernetes-storages/hw/csi-driver-host-path
+	url = git@github.com:kubernetes-csi/csi-driver-host-path.git
