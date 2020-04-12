@@ -36,3 +36,13 @@ variable project_id {
   description = "Project ID in GCP"
   type        = string
 }
+
+variable "gce_ssh_user" {
+  type        = string
+  description = "Username for ssh key"
+}
+
+variable "gce_ssh_pub_key_file" {
+  type        = string
+  description = "Path to ssh pub key"
+}
