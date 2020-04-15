@@ -4,8 +4,8 @@ metadata:
   name: storage-pod
 spec:
   containers:
-    - name: busy
-      image: busybox
+    - name: nginx
+      image: nginx
       volumeMounts:
       - mountPath: "/data"
         name: storage-pvc
