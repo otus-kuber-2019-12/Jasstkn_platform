@@ -14,7 +14,7 @@ resource google_container_cluster "cluster" {
   min_master_version       = data.google_container_engine_versions.engine_versions.latest_master_version
 
   network_policy {
-    enabled  = false
+    enabled = false
   }
   addons_config {
     istio_config {
