@@ -1,3 +1,4 @@
+### 08 
 ### 07 Kubernetes templating
 * Created GKE cluster using terraform with remote GCS storage
 * Set up nginx-ingress using helm-chart
