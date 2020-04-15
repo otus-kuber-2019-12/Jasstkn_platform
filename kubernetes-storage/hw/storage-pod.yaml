@@ -11,6 +11,6 @@ spec:
         name: storage-restore
       command: [ "sleep", "1000000" ]
   volumes:
-    - name: storage-restore
+    - name: storage-pvc
       persistentVolumeClaim:
-        claimName: storage-restore # defined in csi-pvc.yaml
+        claimName: storage-pvc # defined in csi-pvc.yaml
